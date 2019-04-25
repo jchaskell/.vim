@@ -55,8 +55,8 @@ set backspace=indent,eol,start
 set history=100
 
 " handle long lines nicely
-set wrap
-set textwidth=79
+set wrap linebreak nolist
+set textwidth=0
 set formatoptions=qrn1
 
 set autoindent
@@ -215,7 +215,7 @@ set wildignore+=*.pyc                            " Python byte code
 set wildignore+=*.orig                           " Merge resolution files
 
 " Airline theme
-let g:airline_theme='monochrome'
+let g:airline_theme='badwolf'
 
 " delimitMate
 let g:delimitMate_expand_cr = 1
