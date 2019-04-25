@@ -18,6 +18,9 @@ let mapleader=","
 syntax on
 colorscheme monokai
 
+" Python highlighting
+let python_highlight_all=1
+
 " Settings
 set noerrorbells
 set number          " show line numbers
@@ -55,8 +58,8 @@ set backspace=indent,eol,start
 set history=100
 
 " handle long lines nicely
-set wrap linebreak nolist
-set textwidth=0
+set wrap
+set textwidth=79
 set formatoptions=qrn1
 
 set autoindent
@@ -84,7 +87,8 @@ if has('mouse')
   set mouse=a
 endif
 
-
+" Universal clipboard
+set clipboard=unnamed
 
 " Movement
 " if lines are wrapped, don't skip over wrapped line 
@@ -148,12 +152,13 @@ endif
 au BufNewFile,BufRead *.vim setlocal noet ts=4 sw=4 sts=4
 au BufNewFile,BufRead *.txt setlocal noet ts=4 sw=4
 au BufNewFile,BufRead *.md setlocal spell noet ts=4 sw=4
+    \ set textwidth=0
+    \ set wrap linebreak nolist
 au BufNewFile,BufRead *.yml,*.yaml setlocal expandtab ts=2 sw=2
 au BufNewFile,BufRead *.cpp setlocal expandtab ts=2 sw=2
 au BufNewFile,BufRead *.hpp setlocal expandtab ts=2 sw=2
 au BufNewFile,BufRead *.json setlocal expandtab ts=2 sw=2
 au BufNewFile,BufRead *.jade setlocal expandtab ts=2 sw=2
-
 augroup filetypedetect
   au BufNewFile,BufRead .tmux.conf*,tmux.conf* setf tmux
   au BufNewFile,BufRead .nginx.conf*,nginx.conf* setf nginx
