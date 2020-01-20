@@ -92,8 +92,8 @@ set clipboard=unnamed
 
 " Movement
 " if lines are wrapped, don't skip over wrapped line 
-map j gj
-map k gDTreeShowHidden=1
+" map j gj
+" map k gDTreeShowHidden=1
 
 " use gundo for undo - shortcut is \u
 nnoremap <leader>u :GundoToggle<CR>
@@ -128,6 +128,16 @@ nnoremap <leader>s :mksession<CR> " \s saves session; reopen with vim -S
 
 " Ag shortcut 
 nnoremap <leader>a :Ag
+
+" Ctags for R
+let g:tagbar_type_r = {
+    \ 'ctagstype' : 'r',
+    \ 'kinds'     : [
+        \ 'f:Functions',
+        \ 'g:GlobalVariables',
+        \ 'v:FunctionVariables',
+    \ ]
+\ }
 
 " allows cursor change in tmux mode
 if exists('$TMUX')
@@ -187,6 +197,9 @@ autocmd FileType gitconfig,sh,toml set noexpandtab
 
 " python indent
 autocmd BufNewFile,BufRead *.py setlocal tabstop=4 softtabstop=4 shiftwidth=4 textwidth=80 smarttab expandtab
+
+" R indent
+autocmd BufNewFile,BufRead *.R setlocal tabstop=2, softtabstop=2, shiftwidth=2 textwidth=80 smarttab expandtab
 
 " toml settings
 au BufRead,BufNewFile MAINTAINERS set ft=toml
