@@ -82,6 +82,10 @@ set complete=.,w,b,u,t
 set scrolloff=1
 set sidescrolloff=5
 
+" Persistent edit history
+set undodir=~/.vim/undodir
+set undofile
+
 " Mouse
 if has('mouse')
   set mouse=a
@@ -199,7 +203,7 @@ autocmd FileType gitconfig,sh,toml set noexpandtab
 autocmd BufNewFile,BufRead *.py setlocal tabstop=4 softtabstop=4 shiftwidth=4 textwidth=80 smarttab expandtab
 
 " R indent
-autocmd BufNewFile,BufRead *.R setlocal tabstop=2, softtabstop=2, shiftwidth=2 textwidth=80 smarttab expandtab
+autocmd BufNewFile,BufRead *.R setlocal tabstop=2 softtabstop=2 shiftwidth=2 textwidth=80 smarttab expandtab
 
 " toml settings
 au BufRead,BufNewFile MAINTAINERS set ft=toml
@@ -234,6 +238,7 @@ set wildignore+=*.orig                           " Merge resolution files
 
 " Airline theme
 let g:airline_theme='badwolf'
+let g:airline_section_x = '%{PencilMode()}'
 
 " delimitMate
 let g:delimitMate_expand_cr = 1
@@ -276,3 +281,7 @@ let g:vim_markdown_follow_anchor = 1
 let g:vim_markdown_frontmatter = 1
 let g:vim_markdown_toml_frontmatter = 1
 let g:vim_markdown_json_frontmatter = 1
+
+" YouCompleteMe
+let g:ycm_autoclose_preview_window_after_completion=1
+map <leader>g  :YcmCompleter GoToDefinitionElseDeclaration<CR>
