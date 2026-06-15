@@ -1,3 +1,12 @@
-.git/
-.git
-bundle/*/doc/tags
+# Plugins are managed by vim-plug — reproduced from the Plug lines in vimrc
+# via :PlugInstall, so the installed copies are not tracked.
+plugged/
+
+# Runtime / generated state
+undodir/
+*.swp
+*.swo
+
+# Editor backups
+*.bak
+*.bak[0-9]

@@ -1,21 +1,71 @@
-" Last updated 23 February 2019
+" Last updated 9 June 2026
 " Heavily borrowed from https://dougblack.io/words/a-good-vimrc.html and
 " jessfraz
 
-" Load plugins
-execute pathogen#infect()
-call pathogen#helptags()
-
 set nocompatible
-filetype off
-filetype plugin indent on
+
+" ============================================================
+"  Plugins — managed by vim-plug (https://github.com/junegunn/vim-plug)
+"  Install/update:  :PlugInstall   :PlugUpdate   :PlugClean
+" ============================================================
+
+" Auto-bootstrap on a fresh clone: fetch vim-plug if it's missing, then install
+" any declared-but-not-yet-installed plugins on first launch.
+let s:plug_file = expand('~/.vim/autoload/plug.vim')
+if empty(glob(s:plug_file))
+  silent execute '!curl -fLo ' . s:plug_file . ' --create-dirs '
+        \ . 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+endif
+
+call plug#begin('~/.vim/plugged')
+
+" --- migrated from the old pathogen bundle ---
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'Raimondi/delimitMate'
+Plug 'Yggdroot/indentLine'
+Plug 'preservim/nerdtree'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'ap/vim-buftabline'
+Plug 'airblade/vim-gitgutter'
+Plug 'preservim/vim-markdown'
+Plug 'heavenshell/vim-pydocstring'
+Plug 'Vimjas/vim-python-pep8-indent'
+Plug 'tpope/vim-surround'
+Plug 'stephpy/vim-yaml'
+Plug 'mg979/vim-visual-multi'
+
+" --- new ---
+Plug '/opt/homebrew/opt/fzf'   " use the brew-installed fzf binary/runtime
+Plug 'junegunn/fzf.vim'        " :Files, :Buffers, :Rg, etc.
+Plug 'tpope/vim-fugitive'      " Git inside vim
+Plug 'jpalardy/vim-slime'      " send code to a REPL
+
+call plug#end()
+" plug#end() runs `filetype plugin indent on` and `syntax on` automatically.
+
+" If any declared plugin isn't installed yet (e.g. a fresh clone), install them
+" once on startup, then reload the config so they're active immediately.
+autocmd VimEnter *
+      \ if len(filter(values(g:plugs), '!isdirectory(v:val.dir)'))
+      \ |   PlugInstall --sync | source $MYVIMRC
+      \ | endif
 
 " Bind Esc to jj
-imap jj <Esc>
+inoremap jj <Esc>
 let mapleader=","
 
 " Color scheme
 syntax on
+
+" True color (24-bit). Must be set before :colorscheme.
+if has('termguicolors')
+  " Make true color work inside tmux/screen
+  let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+  let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+  set termguicolors
+endif
+
 colorscheme monokai
 
 " Python highlighting
@@ -52,7 +102,6 @@ set nocursorcolumn
 set nocursorline
 syntax sync minlines=256
 set synmaxcol=300
-set re=1
 
 set backspace=indent,eol,start
 set history=100
@@ -99,18 +148,38 @@ set clipboard=unnamed
 " map j gj
 " map k gDTreeShowHidden=1
 
-" use gundo for undo - shortcut is \u
-nnoremap <leader>u :GundoToggle<CR>
-
 " Shortcuts to edit and source vimrc
 nnoremap <leader>ev :vsp $MYVIMRC<CR>
 nnoremap <leader>sv :source $MYVIMRC<CR>
 
+" \n jots a vim pain point (see ~/.vim/vim-pain.md). Append a timestamped entry
+" and drop into insert at the bottom so you can capture the annoyance in one move.
+nnoremap <leader>n :split ~/.vim/vim-pain.md<CR>:call append(line('$'), '- ' . strftime('%Y-%m-%d') . ': ')<CR>G$a
+
+" \? opens the vim setup/cheatsheet in a new tab (~/.vim/vim-setup.md)
+nnoremap <leader>? :tabedit ~/.vim/vim-setup.md<CR>
+
+" --- Getting help / answering your own vim questions ---
+" \H fuzzy-searches all vim help tags (fzf); \M searches your own mappings.
+nnoremap <leader>H :Helptags<CR>
+nnoremap <leader>M :Maps<CR>
+
+" Ask Claude Code a question without leaving vim. The answer streams into a
+" terminal split (non-blocking). Usage:  :Ask how do I move between tabs
+" \c prefills the command line so you just type the question and hit Enter.
+function! AskClaude(question) abort
+  botright 15new
+  call term_start(['claude', '-p',
+        \ 'Answer concisely for a vim user. ' . a:question],
+        \ {'curwin': 1, 'term_name': 'ask-claude'})
+endfunction
+command! -nargs=+ Ask call AskClaude(<q-args>)
+nnoremap <leader>c :Ask<Space>
+
 " re open previously open file
 nnoremap <leader><leader> :e#<CR>
 
-" w!nnoremap !ettings                       "
-" " ----------------------------------------- "lets you change to sudo if you need to
+" w!! lets you save a file as sudo when you forgot to open it with sudo
 cmap w!! w !sudo tee % >/dev/null
 
 " run visually selected code in python with ,p
@@ -118,7 +187,7 @@ nnoremap <leader>p :w !python<CR>
 nnoremap <leader>r :w !R<CR>
 
 " remove search highlight
-nnoremap <leader><space> :noh
+nnoremap <leader><space> :noh<CR>
 
 " 80 character line limit
 if exists('+colorcolumn')
@@ -128,20 +197,23 @@ else
 endif
 
 " Other shortcuts
-nnoremap <leader>s :mksession<CR> " \s saves session; reopen with vim -S
+" \s saves session; reopen with vim -S
+nnoremap <leader>s :mksession<CR>
 
-" Ag shortcut 
-nnoremap <leader>a :Ag
+" Use ripgrep for :grep and CtrlP (falls back gracefully if rg is absent)
+if executable('rg')
+  set grepprg=rg\ --vimgrep\ --smart-case
+  set grepformat=%f:%l:%c:%m
+  let g:ctrlp_user_command = 'rg %s --files --color=never --glob ""'
+  let g:ctrlp_use_caching = 0
+endif
 
-" Ctags for R
-let g:tagbar_type_r = {
-    \ 'ctagstype' : 'r',
-    \ 'kinds'     : [
-        \ 'f:Functions',
-        \ 'g:GlobalVariables',
-        \ 'v:FunctionVariables',
-    \ ]
-\ }
+" --- fzf.vim: fuzzy file/buffer/grep finder ---
+nnoremap <leader>f :Files<CR>
+nnoremap <leader>b :Buffers<CR>
+" \a ripgreps the project; \A seeds it with the word under the cursor
+nnoremap <leader>a :Rg<CR>
+nnoremap <leader>A :Rg <C-r><C-w><CR>
 
 " allows cursor change in tmux mode
 if exists('$TMUX')
@@ -238,7 +310,6 @@ set wildignore+=*.orig                           " Merge resolution files
 
 " Airline theme
 let g:airline_theme='badwolf'
-let g:airline_section_x = '%{PencilMode()}'
 
 " delimitMate
 let g:delimitMate_expand_cr = 1
@@ -254,13 +325,6 @@ let NERDTreeIgnore=['\.vim$', '\~$', '\.git$', '.DS_Store']
 
 " Close nerdtree and vim on close file
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
-
-" Completion
-let g:deoplete#enable_at_startup = 1
-let g:deoplete#ignore_sources = {}
-let g:deoplete#ignore_sources._ = ['buffer', 'member', 'tag', 'file', 'neosnippet']
-let g:deoplete#sources#go#sort_class = ['func', 'type', 'var', 'const']
-let g:deoplete#sources#go#align_class = 1
 
 " vim-markdown
 " disable folding
@@ -282,6 +346,14 @@ let g:vim_markdown_frontmatter = 1
 let g:vim_markdown_toml_frontmatter = 1
 let g:vim_markdown_json_frontmatter = 1
 
-" YouCompleteMe
-let g:ycm_autoclose_preview_window_after_completion=1
-map <leader>g  :YcmCompleter GoToDefinitionElseDeclaration<CR>
+" vim-fugitive: Git inside vim
+nnoremap <leader>gs :Git<CR>
+nnoremap <leader>gb :Git blame<CR>
+nnoremap <leader>gd :Gdiffsplit<CR>
+
+" vim-slime: send code to a REPL.
+" Default target is a :terminal buffer (works without tmux). If you're working
+" inside tmux, set g:slime_target = "tmux" instead and it'll send to a pane.
+let g:slime_target = "vimterminal"
+let g:slime_bracketed_paste = 1
+" C-c C-c sends the current paragraph/selection to the REPL (slime default).
